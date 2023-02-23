@@ -1,0 +1,71 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  offline-development-api
+  
+Globals:
+  Function:
+    Timeout: 60
+
+Resources:
+  NodeModulesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: lambdas_example_npm_packages
+      Description: Node modules layer
+      ContentUri: build/layers/lambdas_example_npm_packages/nodejs
+      CompatibleRuntimes:
+        - nodejs18.x
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+  GeneralLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: general_layer
+      Description: General functions
+      ContentUri: build/layers
+      CompatibleRuntimes:
+        - nodejs18.x
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+  TestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Cors:
+        AllowMethods: "'OPTIONS,GET,POST,PUT,PATCH,DELETE'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+  RollDiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/lambdas/lambda_dice_roller_get
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Events:
+        SaveInvoice:
+          Type: Api
+          Properties:
+            Path: /roll
+            Method: get
+            RestApiId: !Ref TestApi
+      Layers:
+        - !Ref NodeModulesLayer
+        - !Ref GeneralLayer
+  CapitalizeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: build/lambdas/lambda_capitalize_post
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Events:
+        SaveInvoice:
+          Type: Api
+          Properties:
+            Path: /capitalize
+            Method: post
+            RestApiId: !Ref TestApi
+      Layers:
+        - !Ref NodeModulesLayer
+        - !Ref GeneralLayer
