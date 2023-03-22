@@ -37,17 +37,17 @@ Resources:
         AllowMethods: "'OPTIONS,GET,POST,PUT,PATCH,DELETE'"
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
-  RollDiceFunction:
+  FetchPokemonFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: build/lambdas/lambda_dice_roller_get
+      CodeUri: build/lambdas/lambda_fetch_pokemon_get
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
       Events:
         SaveInvoice:
           Type: Api
           Properties:
-            Path: /roll
+            Path: /pokemon
             Method: get
             RestApiId: !Ref TestApi
       Layers:

@@ -1,5 +1,5 @@
 import { APIGatewayEvent, Handler } from 'aws-lambda';
-import { diceRoll } from '/opt/general_layer/helperFunctions';
+import { fetchPokemon } from '/opt/general_layer/helperFunctions';
 
 export const lambdaHandler: Handler = async (
   event: APIGatewayEvent,
@@ -12,14 +12,10 @@ export const lambdaHandler: Handler = async (
     body: string;
 }> => {
     try {
-        const diceRollResult = diceRoll();
+        const pokemon = await fetchPokemon();
 
-        if (
-            typeof diceRollResult !== 'number' ||
-            diceRollResult > 6 ||
-            diceRollResult < 0
-        ) {
-            throw new Error('Invalid dice roll!');
+        if (!pokemon) {
+            throw new Error('Failed to fetch pokemon!');
         }
 
         return {
@@ -29,8 +25,8 @@ export const lambdaHandler: Handler = async (
             },
             isBase64Encoded: false,
             body: JSON.stringify({
-                message: 'Dice rolled.',
-                number: diceRollResult
+                message: 'Pokemon fetched.',
+                data: pokemon
             })
         }
     } catch (err) {
